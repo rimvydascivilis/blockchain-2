@@ -3,8 +3,20 @@
 
 #include <string>
 #include <bitset>
+#include <vector>
 
 using namespace std;
+
+string join(vector<pair<string, int>> v, string delimiter) {
+    string result = "";
+    for (unsigned int i=0; i<v.size(); i++) {
+        result += v[i].first + ":" + to_string(v[i].second);
+        if (i != v.size() - 1) {
+            result += delimiter;
+        }
+    }
+    return result;
+}
 
 string convert_to_hex(bitset<256> hash) {
     string bits = hash.to_string(), hex, chr, tmp;
