@@ -19,6 +19,12 @@ int main() {
         users.push_back(User("user" + id, id, id, rand() % 999901 + 100, &blockchain));
     }
 
+    for (int i=0; i<10000; i++) {
+        User randomUser = users[rand() % users.size()];
+        User randomRecipient = users[rand() % users.size()];
+        randomUser.sendTokens(randomRecipient.getPublicKey(), rand() % 10);
+    }
+
     blockchain.mineAll();
     writeToFile(blockchain, users, "results/");
 }
