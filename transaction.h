@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "hash.h"
-#include "rsa_wrapper.h"
 #include "util.h"
 
 using namespace std;
