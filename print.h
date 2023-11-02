@@ -34,11 +34,20 @@ void writeBlockchainToFile(Blockchain blockchain, string filename) {
     file << blockchain;
 }
 
-void writeToFile(Blockchain blockchain, string directory) {
+void writeUsersToFile(vector<User> users, string filename) {
+    ofstream file;
+    file.open(filename);
+    for (size_t i=0; i<users.size(); i++) {
+        file << users[i] << endl;
+    }
+}
+
+void writeToFile(Blockchain blockchain, vector<User> users, string directory) {
     system(("mkdir -p " + directory).c_str());
     writeBlockchainToFile(blockchain, directory + "blockchain.txt");
     writePendingTransactionsToFile(blockchain.getPendingTransactions(), directory + "pending_transactions.txt");
     WriteBlocksToFile(blockchain.getChain(), directory + "block_");
+    writeUsersToFile(users, directory + "users.txt");
 }
 
 #endif // PRINT_H

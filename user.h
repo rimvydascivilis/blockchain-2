@@ -40,6 +40,20 @@ public:
         Transaction tx = Transaction(this->public_key, recipient_address, amount, {}, {{recipient_address, amount}});
         this->blockchain->addTransaction(tx);
     }
+
+    string toString() const {
+        string result = "";
+        result += "Name: " + this->name + "\n";
+        result += "Private key: " + this->private_key + "\n";
+        result += "Public key: " + this->public_key + "\n";
+        result += "Balance: 0\n";
+        return result;
+    }
+
+    friend ostream& operator<<(ostream& os, const User& user) {
+        os << user.toString();
+        return os;
+    }
 };
 
 #endif // USER_H

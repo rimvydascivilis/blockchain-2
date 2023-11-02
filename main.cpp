@@ -20,5 +20,5 @@ int main() {
     }
 
     blockchain.mineAll();
-    writeToFile(blockchain, "results/");
+    writeToFile(blockchain, users, "results/");
 }
