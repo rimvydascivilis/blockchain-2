@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <ctime>
+#include <cassert>
 
 #include "transaction.h"
 #include "hash.h"
@@ -42,7 +43,35 @@ public:
     }
 
     string calculateMerkleRootHash() {
-        return convert_to_hex(hash_f(join(this->transactions, ";")));
+        vector<string> merkle {};
+        for (unsigned int i=0; i<this->transactions.size(); i++) {
+            merkle.push_back(this->transactions[i].getHash());
+        }
+
+        if (merkle.empty()) {
+            return convert_to_hex(hash_f(""));
+        } else if (merkle.size() == 1) {
+            return merkle[0];
+        }
+
+        while (merkle.size() > 1) {
+            if (merkle.size() % 2 != 0) {
+                merkle.push_back(merkle.back());
+            }
+
+            assert(merkle.size() % 2 == 0);
+
+            vector<string> new_merkle;
+            for (auto it = merkle.begin(); it != merkle.end(); it += 2) {
+                string concat_data = *it + *(it + 1);
+                string concat_hash = convert_to_hex(hash_f(concat_data));
+                new_merkle.push_back(concat_hash);
+            }
+
+            merkle = new_merkle;
+        }
+
+        return merkle[0];
     }
 
     string getPreviousHash() {
