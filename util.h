@@ -4,6 +4,10 @@
 #include <string>
 #include <bitset>
 #include <vector>
+#include <sys/random.h>
+#include <sstream>
+#include <iomanip>
+#include <cstring>
 
 using namespace std;
 
@@ -75,6 +79,39 @@ string convert_to_hex(bitset<256> hash) {
         }
     }
     return hex;
+}
+
+vector<unsigned char> fillRandom(size_t size) {
+    vector<unsigned char> data(size);
+    ssize_t res = getrandom(data.data(), size, 0);
+    if (res < 0 || static_cast<size_t>(res) != size) {
+        cerr << "Failed to generate randomness\n";
+        terminate();
+    }
+    return data;
+}
+
+vector<unsigned char> hexStringToBytes(const string& hex) {
+    vector<unsigned char> bytes;
+    for (size_t i = 0; i < hex.length(); i += 2) {
+        string byteString = hex.substr(i, 2);
+        bytes.push_back(static_cast<unsigned char>(stoi(byteString, nullptr, 16)));
+    }
+    return bytes;
+}
+
+string bytesToHexString(const unsigned char* bytes, size_t len) {
+    stringstream ss;
+    ss << hex << setfill('0');
+    for (size_t i = 0; i < len; ++i) {
+        ss << setw(2) << static_cast<int>(bytes[i]);
+    }
+    return ss.str();
+}
+
+void secureErase(void *ptr, size_t len) {
+    memset(ptr, 0, len);
+    __asm__ __volatile__("" : : "r"(ptr) : "memory");
 }
 
 #endif // UTIL_H
