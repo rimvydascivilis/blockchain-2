@@ -11,10 +11,21 @@
 
 using namespace std;
 
-string join(vector<pair<string, int>> v, string delimiter) {
+string join(vector<input_t> v, string delimiter) {
     string result = "";
     for (unsigned int i=0; i<v.size(); i++) {
-        result += v[i].first + ":" + to_string(v[i].second);
+        result += v[i].transaction_hash + ":" + to_string(v[i].output_index);
+        if (i != v.size() - 1) {
+            result += delimiter;
+        }
+    }
+    return result;
+}
+
+string join (vector<output_t> v, string delimiter) {
+    string result = "";
+    for (unsigned int i=0; i<v.size(); i++) {
+        result += v[i].address + ":" + to_string(v[i].amount);
         if (i != v.size() - 1) {
             result += delimiter;
         }

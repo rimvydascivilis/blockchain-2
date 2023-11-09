@@ -6,28 +6,29 @@
 
 #include "hash.h"
 #include "util.h"
+#include "types.h"
 
 using namespace std;
 
 class Transaction {
 private:
-    string sender_address;
-    string recipient_address;
-    int amount;
-    string signature;
-    vector<pair<string, int>> inputs; // <transaction hash, output index>
-    vector<pair<string, int>> outputs; // <address, amount>
+    address_t sender_address;
+    address_t recipient_address;
+    token_t amount;
+    signature_t signature;
+    vector<input_t> inputs;
+    vector<output_t> outputs;
 
 public:
-    Transaction(const string& sender_address, const string& recipient_address, int amount, vector<pair<string, int>> inputs, vector<pair<string, int>> outputs) {
-        this->sender_address = sender_address;
-        this->recipient_address = recipient_address;
+    Transaction(const address_t& sender, const address_t& recipient, token_t amount, vector<input_t> inputs, vector<output_t> outputs) {
+        this->sender_address = sender;
+        this->recipient_address = recipient;
         this->amount = amount;
         this->inputs = inputs;
         this->outputs = outputs;
     }
 
-    string calculateHash() const {
+    transaction_hash_t calculateHash() const {
         return convert_to_hex(hash_f(
             this->sender_address + ";" +
             this->recipient_address + ";" +
@@ -37,35 +38,35 @@ public:
         ));
     }
 
-    const string getHash() {
+    transaction_hash_t getHash() {
         return calculateHash();
     }
 
-    const string& getSenderAddress() {
+    const address_t& getSenderAddress() {
         return sender_address;
     }
 
-    const string& getRecipientAddress() {
+    const address_t& getRecipientAddress() {
         return recipient_address;
     }
 
-    int getAmount() {
+    token_t getAmount() {
         return amount;
     }
 
-    const string& getSignature() {
+    const signature_t& getSignature() {
         return signature;
     }
 
-    void setSignature(const string& signature) {
+    void setSignature(const signature_t& signature) {
         this->signature = signature;
     }
 
-    const vector<pair<string, int>>& getInputs() {
+    const vector<input_t>& getInputs() {
         return inputs;
     }
 
-    const vector<pair<string, int>>& getOutputs() {
+    const vector<output_t>& getOutputs() {
         return outputs;
     }
 

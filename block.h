@@ -9,6 +9,7 @@
 #include "transaction.h"
 #include "hash.h"
 #include "util.h"
+#include "types.h"
 
 using namespace std;
 
@@ -25,16 +26,16 @@ string join(vector<Transaction> v, string delimiter) {
 
 class Block {
 private:
-    string previous_hash;
-    string merkle_root_hash;
+    block_hash_t previous_hash;
+    merkle_root_hash_t merkle_root_hash;
     time_t timestamp;
-    unsigned int nonce;
+    uint64_t nonce;
     string version = "0.1";
-    unsigned short int difficulty = 14;
+    uint16_t difficulty = 14;
     vector<Transaction> transactions;
 
 public:
-    Block(string previous_hash, vector<Transaction> transactions) {
+    Block(block_hash_t previous_hash, vector<Transaction> transactions) {
         this->previous_hash = previous_hash;
         this->transactions = transactions;
         this->timestamp = time(0);
@@ -43,7 +44,7 @@ public:
     }
 
     string calculateMerkleRootHash() {
-        vector<string> merkle {};
+        vector<transaction_hash_t> merkle {};
         for (unsigned int i=0; i<this->transactions.size(); i++) {
             merkle.push_back(this->transactions[i].getHash());
         }
@@ -61,7 +62,7 @@ public:
 
             assert(merkle.size() % 2 == 0);
 
-            vector<string> new_merkle;
+            vector<transaction_hash_t> new_merkle;
             for (auto it = merkle.begin(); it != merkle.end(); it += 2) {
                 string concat_data = *it + *(it + 1);
                 string concat_hash = convert_to_hex(hash_f(concat_data));
@@ -74,11 +75,11 @@ public:
         return merkle[0];
     }
 
-    string getPreviousHash() {
+    block_hash_t getPreviousHash() {
         return this->previous_hash;
     }
 
-    string getMerkleRootHash() {
+    merkle_root_hash_t getMerkleRootHash() {
         return this->merkle_root_hash;
     }
 
@@ -86,11 +87,11 @@ public:
         return this->timestamp;
     }
 
-    uint getNonce() {
+    uint64_t getNonce() {
         return this->nonce;
     }
 
-    void setNonce(uint nonce) {
+    void setNonce(uint64_t nonce) {
         this->nonce = nonce;
     }
 
@@ -98,7 +99,7 @@ public:
         return this->version;
     }
 
-    unsigned short int getDifficulty() {
+    uint16_t getDifficulty() {
         return this->difficulty;
     }
 

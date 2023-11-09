@@ -5,20 +5,15 @@
 #include <vector>
 
 #include "block.h"
+#include "transaction.h"
+#include "types.h"
 
 using namespace std;
-
-struct UTXO {
-    string transaction_hash;
-    int output_index;
-    int amount;
-};
 
 class Blockchain {
 private:
     vector<Block> chain;
     vector<Transaction> pending_transactions;
-    vector<UTXO> utxos;
 
 public:
     Blockchain() {
@@ -33,7 +28,7 @@ public:
         return this->chain.back();
     }
 
-    const string getLastBlockHash() const {
+    const block_hash_t getLastBlockHash() const {
         return this->chain.back().calculateHash();
     }
 
