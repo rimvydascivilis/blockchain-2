@@ -6,6 +6,7 @@
 #include "transaction.h"
 #include "blockchain.h"
 #include "hash.h"
+#include "ecdsa_signer.h"
 
 using namespace std;
 
@@ -20,6 +21,9 @@ public:
     User(string name, Blockchain* blockchain) {
         this->name = name;
         this->blockchain = blockchain;
+        ECDSASigner signer;
+        this->private_key = signer.getPrivateKey();
+        this->public_key = signer.getPublicKey();
     }
 
     User(string name, string private_key, string public_key, uint balance, Blockchain* blockchain) {
@@ -28,7 +32,9 @@ public:
         this->public_key = public_key;
         this->blockchain = blockchain;
 
+        // TODO: implement input UTXOs
         Transaction tx = Transaction("0", this->public_key, balance, {}, {{this->public_key, balance}});
+        this->signTransaction(tx);
         this->blockchain->addTransaction(tx);
     }
 
@@ -36,8 +42,15 @@ public:
         return public_key;
     }
 
+    void signTransaction(Transaction& tx) {
+        ECDSASigner signer(this->private_key);
+        tx.setSignature(signer.sign(tx.calculateHash()));
+    }
+
     void sendTokens(const string& recipient_address, int amount) {
+        // TODO: implement input UTXOs
         Transaction tx = Transaction(this->public_key, recipient_address, amount, {}, {{recipient_address, amount}});
+        this->signTransaction(tx);
         this->blockchain->addTransaction(tx);
     }
 
