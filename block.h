@@ -86,8 +86,12 @@ public:
         return this->timestamp;
     }
 
-    unsigned int getNonce() {
+    uint getNonce() {
         return this->nonce;
+    }
+
+    void setNonce(uint nonce) {
+        this->nonce = nonce;
     }
 
     string getVersion() {
