@@ -61,18 +61,34 @@ private:
         return block;
     }
 
+    void mineBlock(vector<Transaction> validTxs) {
+        uint64_t nonceStart = rand();
+        Block block = this->POW(validTxs, nonceStart);
+        cout << "Mined block with nonce: " << block.getNonce() << endl;
+        this->getBlockchain()->addBlock(block);
+        cout << "Added block to blockchain" << endl;
+    }
+
 public:
     Miner(string name, Blockchain* blockchain) : User(name, blockchain) {}
 
     void mineBlock() {
         vector<Transaction> txs = this->getBlockchain()->getPendingTransactions();
         vector<Transaction> valid_txs = this->getValidRandomTxs(txs);
-        cout << "Valid txs: " << valid_txs.size() << endl;
-        uint64_t nonceStart = rand();
-        Block block = this->POW(valid_txs, nonceStart);
-        cout << "Mined block with nonce: " << block.getNonce() << endl;
-        this->getBlockchain()->addBlock(block);
-        cout << "Added block to blockchain" << endl;
+        this->mineBlock(valid_txs);
+    }
+
+    void mineAllValidTxs() {
+        while (1) {
+            vector<Transaction> txs = this->getBlockchain()->getPendingTransactions();
+            vector<Transaction> valid_txs = this->getValidRandomTxs(txs);
+            if (valid_txs.size() == 0) {
+                break;
+            }
+
+            this->mineBlock(valid_txs);
+            valid_txs = this->getValidRandomTxs(txs);
+        }
     }
 };
 
