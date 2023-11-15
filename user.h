@@ -39,7 +39,7 @@ public:
         this->blockchain = blockchain;
 
         input_t input = {"0", 0}; // 0 as tx hash is used to generate coins
-        Transaction tx = Transaction("0", this->public_key, balance, {input}, {{this->public_key, balance}});
+        Transaction tx = Transaction("0", this->public_key, {input}, {{this->public_key, balance}});
         this->signTransaction(tx);
         this->blockchain->addPendingTransaction(tx);
     }
@@ -52,7 +52,7 @@ public:
         this->public_key = signer.getPublicKey();
 
         input_t input = {"0", 0}; // 0 as tx hash is used to generate coins
-        Transaction tx = Transaction(this->public_key, this->public_key, balance, {input}, {{this->public_key, balance}});
+        Transaction tx = Transaction(this->public_key, this->public_key, {input}, {{this->public_key, balance}});
         this->signTransaction(tx);
         this->blockchain->addPendingTransaction(tx);
     }
@@ -87,7 +87,7 @@ public:
             }
         }
         assert(balance >= amount);
-        Transaction tx = Transaction(this->public_key, recipient_address, amount, inputs, {
+        Transaction tx = Transaction(this->public_key, recipient_address, inputs, {
             {recipient_address, amount},
             {this->public_key, balance - amount}
         });

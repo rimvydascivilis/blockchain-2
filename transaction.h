@@ -14,7 +14,6 @@ class Transaction {
 private:
     address_t sender_address;
     address_t recipient_address;
-    token_t amount;
     signature_t signature;
     vector<input_t> inputs;
     vector<output_t> outputs;
@@ -22,10 +21,9 @@ private:
 public:
     Transaction() {}
 
-    Transaction(const address_t& sender, const address_t& recipient, token_t amount, vector<input_t> inputs, vector<output_t> outputs) {
+    Transaction(const address_t& sender, const address_t& recipient, vector<input_t> inputs, vector<output_t> outputs) {
         this->sender_address = sender;
         this->recipient_address = recipient;
-        this->amount = amount;
         this->inputs = inputs;
         this->outputs = outputs;
     }
@@ -34,7 +32,6 @@ public:
         return convert_to_hex(hash_f(
             this->sender_address + ";" +
             this->recipient_address + ";" +
-            to_string(this->amount) + ";" +
             join(inputs, ",") + ";" +
             join(outputs, ",")
         ));
@@ -50,10 +47,6 @@ public:
 
     const address_t& getRecipientAddress() {
         return recipient_address;
-    }
-
-    token_t getAmount() {
-        return amount;
     }
 
     const signature_t& getSignature() {
@@ -77,7 +70,6 @@ public:
         str += "Hash: " + calculateHash() + "\n";
         str += "Sender address: " + sender_address + "\n";
         str += "Recipient address: " + recipient_address + "\n";
-        str += "Amount: " + to_string(amount) + "\n";
         str += "Signature: " + signature + "\n";
         str += "Inputs: \n";
         str += join(inputs, ",") + "\n";
