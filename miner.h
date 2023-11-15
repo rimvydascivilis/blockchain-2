@@ -10,22 +10,23 @@
 
 class Miner : public User {
 private:
-    bool isValidTx(Transaction tx) {
+    bool isValidTx(Transaction tx, vector<utxo_t>& utxos) {
         ECDSASigner signer;
         if (signer.verify(tx.getHash(), tx.getSignature(), tx.getSenderAddress()) == false) {
             cout << "Invalid signature" << endl;
             return false;
         }
-
+        vector<utxo_t> available_utxos = utxos;
         for (input_t input : tx.getInputs()) {
             if (input.transaction_hash == "0") {
                 continue; // tx hash is 0 when generating coins
             }
-            vector<utxo_t> available_utxos = this->getBlockchain()->getUTXOsForAddress(tx.getSenderAddress());
             bool found = false;
-            for (utxo_t utxo : available_utxos) {
+            for (uint i=0; i<available_utxos.size(); i++) {
+                utxo_t utxo = available_utxos[i];
                 if (utxo.transaction_hash == input.transaction_hash && utxo.output_index == input.output_index) {
                     found = true;
+                    available_utxos.erase(available_utxos.begin() + i);
                     break;
                 }
             }
@@ -34,14 +35,16 @@ private:
                 return false;
             }
         }
+        utxos = available_utxos;
         return true;
     }
 
     vector<Transaction> getValidRandomTxs(vector<Transaction> txs) {
         vector<Transaction> valid_txs;
+        vector<utxo_t> utxos = this->getBlockchain()->getUTXOs();
         while (valid_txs.size() < 100 && txs.size() > 0) {
             int index = rand() % txs.size();
-            if (this->isValidTx(txs[index])) {
+            if (this->isValidTx(txs[index], utxos)) {
                 valid_txs.push_back(txs[index]);
             }
             txs.erase(txs.begin() + index);

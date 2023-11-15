@@ -20,6 +20,8 @@ private:
     vector<output_t> outputs;
 
 public:
+    Transaction() {}
+
     Transaction(const address_t& sender, const address_t& recipient, token_t amount, vector<input_t> inputs, vector<output_t> outputs) {
         this->sender_address = sender;
         this->recipient_address = recipient;

@@ -14,7 +14,7 @@ using namespace std;
 class Blockchain {
 private:
     vector<Block> chain;
-    vector<Transaction> pending_transactions;
+    unordered_map<transaction_hash_t, Transaction> pending_transactions;
     unordered_map<string, utxo_t> utxos;
 
 public:
@@ -35,11 +35,19 @@ public:
     }
 
     vector<Transaction> getPendingTransactions() {
-        return this->pending_transactions;
+        vector<Transaction> pending_transactions;
+        for (auto const& pending_transaction : this->pending_transactions) {
+            pending_transactions.push_back(pending_transaction.second);
+        }
+        return pending_transactions;
     }
 
-    unordered_map<string, utxo_t> getUTXOs() {
-        return this->utxos;
+    vector<utxo_t> getUTXOs() {
+        vector<utxo_t> utxos;
+        for (auto const& utxo : this->utxos) {
+            utxos.push_back({utxo.second.transaction_hash, utxo.second.output_index, utxo.second.address, utxo.second.amount});
+        }
+        return utxos;
     }
 
     vector<utxo_t> getUTXOsForAddress(address_t address) {
@@ -53,17 +61,12 @@ public:
     }
 
     void addPendingTransaction(Transaction transaction) {
-        this->pending_transactions.push_back(transaction);
+        this->pending_transactions[transaction.getHash()] = transaction;
     }
 
     void updatePendingTransactions(Block newBlock) {
         for (Transaction tx : newBlock.getTransactions()) {
-            for (uint i = 0; i < this->pending_transactions.size(); i++) {
-                if (this->pending_transactions[i].getHash() == tx.getHash()) {
-                    this->pending_transactions.erase(this->pending_transactions.begin() + i);
-                    break;
-                }
-            }
+            this->pending_transactions.erase(tx.getHash());
         }
     }
 
