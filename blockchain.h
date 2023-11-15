@@ -85,12 +85,12 @@ public:
     }
 
     void addBlock(Block block) {
+        cout << "Adding block " << block.calculateHash() << endl;
+        cout << "Block tx count: " << block.getTransactions().size() << endl;
         this->chain.push_back(block);
-        cout << "Added block to chain" << endl;
         this->updateUTXOs(block);
-        cout << "Updated UTXOs" << endl;
         this->updatePendingTransactions(block);
-        cout << "Updated pending transactions" << endl;
+        cout << this->toString() << endl;
     }
 
     string toString() const {
