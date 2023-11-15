@@ -11,8 +11,8 @@
 
 using namespace std;
 
-const uint USER_COUNT = 100;
-const uint TX_COUNT = 50;
+const uint USER_COUNT = 1000;
+const uint TX_COUNT = 10000;
 
 int main() {
     random_device rd;
