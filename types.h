@@ -24,6 +24,12 @@ typedef struct {
     address_t address;
     token_t amount;
 } output_t;
+typedef struct {
+    transaction_hash_t transaction_hash;
+    output_index_t output_index;
+    address_t address;
+    token_t amount;
+} utxo_t;
 
 
 #endif // TYPES_H

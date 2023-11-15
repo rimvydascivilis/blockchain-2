@@ -33,10 +33,10 @@ public:
         this->public_key = public_key;
         this->blockchain = blockchain;
 
-        // TODO: implement input UTXOs
-        Transaction tx = Transaction("0", this->public_key, balance, {}, {{this->public_key, balance}});
+        input_t input = {"0", 0}; // 0 as tx hash is used to generate coins
+        Transaction tx = Transaction("0", this->public_key, balance, {input}, {{this->public_key, balance}});
         this->signTransaction(tx);
-        this->blockchain->addTransaction(tx);
+        this->blockchain->addPendingTransaction(tx);
     }
 
     const public_key_t& getPublicKey() {
@@ -49,10 +49,20 @@ public:
     }
 
     void sendTokens(const address_t& recipient_address, token_t amount) {
-        // TODO: implement input UTXOs
-        Transaction tx = Transaction(this->public_key, recipient_address, amount, {}, {{recipient_address, amount}});
+        vector<utxo_t> utxos = this->blockchain->getUTXOsForAddress(this->public_key);
+        vector<input_t> inputs;
+        token_t balance = 0;
+        for (utxo_t utxo : utxos) {
+            inputs.push_back({utxo.transaction_hash, utxo.output_index});
+            balance += utxo.amount;
+            if (balance >= amount) {
+                break;
+            }
+        }
+        assert(balance >= amount);
+        Transaction tx = Transaction(this->public_key, recipient_address, amount, inputs, {{recipient_address, amount}});
         this->signTransaction(tx);
-        this->blockchain->addTransaction(tx);
+        this->blockchain->addPendingTransaction(tx);
     }
 
     string toString() const {

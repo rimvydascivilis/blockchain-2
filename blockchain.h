@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 #include "block.h"
 #include "transaction.h"
@@ -14,6 +15,7 @@ class Blockchain {
 private:
     vector<Block> chain;
     vector<Transaction> pending_transactions;
+    unordered_map<string, utxo_t> utxos;
 
 public:
     Blockchain() {
@@ -32,29 +34,45 @@ public:
         return this->chain.back().calculateHash();
     }
 
-    void addTransaction(Transaction transaction) {
-        this->pending_transactions.push_back(transaction);
-    }
-
     vector<Transaction> getPendingTransactions() {
         return this->pending_transactions;
     }
 
-    void addBlock(Block block) {
-        this->chain.push_back(block);
+    unordered_map<string, utxo_t> getUTXOs() {
+        return this->utxos;
     }
 
-    void mineAll() {
-        while (this->pending_transactions.size() > 0) {
-            vector<Transaction> transactions;
-            for (unsigned int i=0; i<(uint) this->pending_transactions.size(); i++) {
-                if (this->pending_transactions.size() > 0) {
-                    transactions.push_back(this->pending_transactions.back());
-                    this->pending_transactions.pop_back();
-                }
+    vector<utxo_t> getUTXOsForAddress(address_t address) {
+        vector<utxo_t> utxos;
+        for (auto const& utxo : this->utxos) {
+            if (utxo.second.address == address) {
+                utxos.push_back({utxo.second.transaction_hash, utxo.second.output_index, utxo.second.address, utxo.second.amount});
             }
-            this->addBlock(Block(this->getLastBlockHash(), transactions));
         }
+        return utxos;
+    }
+
+    void addPendingTransaction(Transaction transaction) {
+        this->pending_transactions.push_back(transaction);
+    }
+
+    void updateUTXOs(Block newBlock) {
+        for (Transaction tx : newBlock.getTransactions()) {
+            for (int i = 0; i < tx.getOutputs().size(); i++) {
+                output_t output = tx.getOutputs()[i];
+                utxo_t utxo = {tx.getHash(), i, output.address, output.amount};
+                this->utxos[tx.getHash() + ":" + to_string(i)] = utxo;
+            }
+
+            for (input_t input : tx.getInputs()) {
+                this->utxos.erase(input.transaction_hash + ":" + to_string(input.output_index));
+            }
+        }
+    }
+
+    void addBlock(Block block) {
+        this->chain.push_back(block);
+        this->updateUTXOs(block);
     }
 
     string toString() const {
