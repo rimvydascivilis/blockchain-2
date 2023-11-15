@@ -42,7 +42,15 @@ void writeUsersToFile(vector<User> users, string filename) {
     }
 }
 
-void writeToFile(Blockchain blockchain, vector<User> users, string directory) {
+void writeThreadFoundToFile(vector<uint> threadFound, string filename) {
+    ofstream file;
+    file.open(filename);
+    for (size_t i=0; i<threadFound.size(); i++) {
+        file << "Thread #" << i << ": " << threadFound[i] << " blocks found" << endl;
+    }
+}
+
+void writeToFile(Blockchain blockchain, vector<User> users, vector<uint> threadFound, string directory) {
     int res = system(("mkdir -p " + directory).c_str());
     if (res != 0) {
         cout << "Error creating directory " << directory << endl;
@@ -52,6 +60,7 @@ void writeToFile(Blockchain blockchain, vector<User> users, string directory) {
     writePendingTransactionsToFile(blockchain.getPendingTransactions(), directory + "pending_transactions.txt");
     WriteBlocksToFile(blockchain.getChain(), directory + "block_");
     writeUsersToFile(users, directory + "users.txt");
+    writeThreadFoundToFile(threadFound, directory + "thread_found.txt");
 }
 
 #endif // PRINT_H

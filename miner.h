@@ -2,18 +2,30 @@
 #define MINER_H
 
 #include <vector>
+#include <atomic>
+#include <thread>
+#include <random>
 
 #include "user.h"
 #include "transaction.h"
 #include "blockchain.h"
 #include "ecdsa_signer.h"
 
+using namespace std;
+
+const uint8_t threadCount = 5;
+
 class Miner : public User {
 private:
+    atomic<bool> stopFlag;
+    vector<uint> threadFound = vector<uint>(threadCount, 0);
+    random_device rd;
+    default_random_engine generator;
+    uniform_int_distribution<uint64_t> distr;
+
     bool isValidTx(Transaction tx, vector<utxo_t>& utxos) {
         ECDSASigner signer;
         if (signer.verify(tx.getHash(), tx.getSignature(), tx.getSenderAddress()) == false) {
-            cout << "Invalid signature" << endl;
             return false;
         }
         vector<utxo_t> available_utxos = utxos;
@@ -31,7 +43,6 @@ private:
                 }
             }
             if (found == false) {
-                cout << "Input not found" << endl;
                 return false;
             }
         }
@@ -52,43 +63,52 @@ private:
         return valid_txs;
     }
 
-    Block POW(vector<Transaction> transactions, uint64_t nonceStart) {
-        Block block = Block(this->getBlockchain()->getLastBlockHash(), transactions);
+    void mineBlock(vector<Transaction> validTxs, uint64_t nonceStart, uint threadIdx) {
+        Block block = Block(this->getBlockchain()->getLastBlockHash(), validTxs);
         block.setNonce(nonceStart);
-        while (block.calculateHash().substr(0, block.getDifficulty()) != string(block.getDifficulty(), '0')) {
+        while (block.calculateHash().substr(0, block.getDifficulty()) != string(block.getDifficulty(), '0')
+                && !stopFlag.load()) {
             block.setNonce(block.getNonce() + 1);
         }
-        return block;
-    }
 
-    void mineBlock(vector<Transaction> validTxs) {
-        uint64_t nonceStart = rand();
-        Block block = this->POW(validTxs, nonceStart);
-        cout << "Mined block with nonce: " << block.getNonce() << endl;
-        this->getBlockchain()->addBlock(block);
-        cout << "Added block to blockchain" << endl;
+        if (stopFlag.load() == false) {
+            cout << "Thread #" << threadIdx << " found a block!" << endl;
+            threadFound[threadIdx]++;
+            stopFlag.store(true);
+            this->getBlockchain()->addBlock(block);
+        }
     }
 
 public:
     Miner(string name, Blockchain* blockchain) : User(name, blockchain) {}
 
-    void mineBlock() {
-        vector<Transaction> txs = this->getBlockchain()->getPendingTransactions();
-        vector<Transaction> valid_txs = this->getValidRandomTxs(txs);
-        this->mineBlock(valid_txs);
-    }
-
     void mineAllValidTxs() {
         while (1) {
             vector<Transaction> txs = this->getBlockchain()->getPendingTransactions();
-            vector<Transaction> valid_txs = this->getValidRandomTxs(txs);
-            if (valid_txs.size() == 0) {
+            if (this->getValidRandomTxs(txs).size() == 0) {
                 break;
             }
 
-            this->mineBlock(valid_txs);
-            valid_txs = this->getValidRandomTxs(txs);
+            vector<vector<Transaction>> validTxsPerThread;
+            for (uint i = 0; i < threadCount; i++) {
+                validTxsPerThread.push_back(this->getValidRandomTxs(txs));
+            }
+
+            stopFlag.store(false);
+            vector<thread> threads;
+            for (uint i = 0; i < threadCount; i++) {
+                uint64_t nonceStart = distr(generator);
+                threads.push_back(thread(&Miner::mineBlock, this, validTxsPerThread[i], nonceStart, i));
+            }
+
+            for (auto &thread : threads) {
+                thread.join();
+            }
         }
+    }
+
+    vector<uint> getThreadFound() {
+        return threadFound;
     }
 };
 

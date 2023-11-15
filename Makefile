@@ -1,6 +1,6 @@
 CC = g++
 CFLAGS = -Wall -std=c++2a -O3
-LDFLAGS = -lsecp256k1
+LDFLAGS = -lsecp256k1 -pthread
 
 SRCS = main.cpp
 OBJS = $(SRCS:.cpp=.o)

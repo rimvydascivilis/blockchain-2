@@ -24,6 +24,7 @@ int main() {
     Blockchain blockchain;
     Miner miner = Miner("miner", &blockchain);
     vector<User> users;
+    cout << "=================== Generating users ===================" << endl;
     for (uint i = 0; i < USER_COUNT; i++) {
         string name = "user" + to_string(i);
         token_t balance = balanceDistr(generator);
@@ -31,6 +32,7 @@ int main() {
     }
     miner.mineAllValidTxs();
 
+    cout << "=================== Generating transactions ===================" << endl;
     for (uint i = 0; i < TX_COUNT; i++) {
         uint64_t senderIndex = userDistr(generator);
         uint64_t receiverIndex = userDistr(generator);
@@ -45,5 +47,5 @@ int main() {
     }
     miner.mineAllValidTxs();
 
-    writeToFile(blockchain, users, "results/");
+    writeToFile(blockchain, users, miner.getThreadFound(), "results/");
 }
