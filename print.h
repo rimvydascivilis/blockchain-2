@@ -43,7 +43,11 @@ void writeUsersToFile(vector<User> users, string filename) {
 }
 
 void writeToFile(Blockchain blockchain, vector<User> users, string directory) {
-    system(("mkdir -p " + directory).c_str());
+    int res = system(("mkdir -p " + directory).c_str());
+    if (res != 0) {
+        cout << "Error creating directory " << directory << endl;
+        return;
+    }
     writeBlockchainToFile(blockchain, directory + "blockchain.txt");
     writePendingTransactionsToFile(blockchain.getPendingTransactions(), directory + "pending_transactions.txt");
     WriteBlocksToFile(blockchain.getChain(), directory + "block_");
