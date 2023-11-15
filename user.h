@@ -87,7 +87,10 @@ public:
             }
         }
         assert(balance >= amount);
-        Transaction tx = Transaction(this->public_key, recipient_address, amount, inputs, {{recipient_address, amount}});
+        Transaction tx = Transaction(this->public_key, recipient_address, amount, inputs, {
+            {recipient_address, amount},
+            {this->public_key, balance - amount}
+        });
         this->signTransaction(tx);
         this->blockchain->addPendingTransaction(tx);
     }
