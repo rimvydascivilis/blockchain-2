@@ -18,6 +18,11 @@ private:
     public_key_t public_key;
     Blockchain *blockchain;
 
+protected:
+    Blockchain* getBlockchain() {
+        return this->blockchain;
+    }
+
 public:
     User(string name, Blockchain* blockchain) {
         this->name = name;
@@ -39,8 +44,30 @@ public:
         this->blockchain->addPendingTransaction(tx);
     }
 
+    User(string name, token_t balance, Blockchain* blockchain) {
+        this->name = name;
+        this->blockchain = blockchain;
+        ECDSASigner signer;
+        this->private_key = signer.getPrivateKey();
+        this->public_key = signer.getPublicKey();
+
+        input_t input = {"0", 0}; // 0 as tx hash is used to generate coins
+        Transaction tx = Transaction(this->public_key, this->public_key, balance, {input}, {{this->public_key, balance}});
+        this->signTransaction(tx);
+        this->blockchain->addPendingTransaction(tx);
+    }
+
     const public_key_t& getPublicKey() {
         return public_key;
+    }
+
+    const token_t getBalance() const {
+        vector<utxo_t> utxos = this->blockchain->getUTXOsForAddress(this->public_key);
+        token_t balance = 0;
+        for (utxo_t utxo : utxos) {
+            balance += utxo.amount;
+        }
+        return balance;
     }
 
     void signTransaction(Transaction& tx) {
@@ -70,7 +97,7 @@ public:
         result += "Name: " + this->name + "\n";
         result += "Private key: " + this->private_key + "\n";
         result += "Public key: " + this->public_key + "\n";
-        result += "Balance: 0\n";
+        result += "Balance: " + to_string(this->getBalance()) + "\n";
         return result;
     }
 

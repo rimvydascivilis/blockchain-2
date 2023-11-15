@@ -31,7 +31,7 @@ private:
     time_t timestamp;
     uint64_t nonce;
     string version = "0.1";
-    uint16_t difficulty = 14;
+    uint8_t difficulty = 1;
     vector<Transaction> transactions;
 
 public:
